@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  postgres_simple_rest_api_db:
+    container_name: postgres_simple_rest_api_db
+    image: postgres:14-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    expose:
+      - '5001'
+    ports:
+      - '5001:5432'
+    volumes:
+      - postgres_simple_rest_api_db:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: api
+    depends_on:
+      - postgres_simple_rest_api_db
+    ports:
+      - '5002:5000'
+    env_file:
+      - ./.env
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    expose:
+      - '5002'
+    command: npm run start:migrate:dev
+
+volumes:
+  postgres_simple_rest_api_db:
+    driver: local
